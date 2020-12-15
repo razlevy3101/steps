@@ -24,9 +24,9 @@ class Creator(db.Document):
 
 
 class Post(db.Document):
-    creator = db.ReferenceField(Creator)
+    creator = db.ReferenceField(Creator, required=True)
     title = db.StringField(required=True)
-    body = db.StringField()
+    body = db.StringField(required=True)
 
     def to_json(self):
         return {"creator": self.creator.email, "title": self.title, "body": self.body}
