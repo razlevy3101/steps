@@ -1,12 +1,28 @@
 #!flask/bin/python
 import json
+from time import time
 from flask import Flask, jsonify, request, make_response
-from app import Creator, Post, DEFAULT_LAST_POSTS
+from functools import wraps
+from app import Creator, Post, Runtime, DEFAULT_LAST_POSTS
 
 app = Flask(__name__)
 
 
+def timing(foo):
+    @wraps(foo)
+    def wrap(*args, **kwargs):
+        start = time()
+        ret = foo(*args, **kwargs)
+        end = time()
+        # convert time to milliseconds
+        runtime = Runtime(func_name=foo.__name__, total_time=(end-start)*1000.0)
+        runtime.save()
+        return ret
+    return wrap
+
+
 @app.route("/post", methods=["POST"])
+@timing
 def create_post():
     """
     *Creates a new post in the DB. Each post contains at least title, body and the user who created the post.
@@ -36,13 +52,14 @@ def create_post():
         post.save()
     except Exception:
         return make_response(jsonify({"error":
-                                          "There was a problem creating a new Post. Please try again later."}),
+                                      "There was a problem creating a new Post. Please try again later."}),
                              500)
     user.update(posts_no=user.posts_no + 1)
     return jsonify(post.to_json())
 
 
 @app.route("/posts", methods=["GET"])
+@timing
 def get_posts():
     """
     Show the last X posts.
@@ -73,5 +90,8 @@ def get_top_10_creators():
 
 @app.route("/runtimestats", methods=["GET"])
 def get_avg_runtime():
-    res = f"""Average runtime for 'create_post' is: {4}<br/>Average runtime for 'get_posts' is: {6} """
+    create_post = Runtime.objects(func_name="create_post").average("total_time")
+    get_posts = Runtime.objects(func_name="get_posts").average("total_time")
+    res = f"Average runtime for 'create_post' is: {create_post} ms" \
+          f"<br/>Average runtime for 'get_posts' is: {get_posts} ms"
     return res
