@@ -1,0 +1,20 @@
+from flask import Flask
+from flask_mongoengine import MongoEngine
+
+app = Flask(__name__)
+
+app.config['MONGODB_SETTINGS'] = {
+    'db': 'your_database',
+    'host': 'localhost',
+    'port': 27017
+}
+db = MongoEngine()
+db.init_app(app)
+
+
+class Creator(db.Document):
+    email = db.StringField(required=True)
+    posts_no = db.IntField(default=0)
+
+    def to_json(self):
+        return {"email": self.email, "posts_no": self.posts_no}

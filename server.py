@@ -1,20 +1,27 @@
 #!flask/bin/python
+import json
 from flask import Flask, jsonify, request
+from app import Creator
+
 app = Flask(__name__)
 
 
 @app.route('/post', methods=['POST'])
 def create_post():
-    if not request.json or not 'title' in request.json:
-        abort(400)
-    task = {
-        'id': tasks[-1]['id'] + 1,
-        'title': request.json['title'],
-        'description': request.json.get('description', ""),
-        'done': False
-    }
-    tasks.append(task)
-    return jsonify({'task': task}), 201
+    """
+    to send a POST request through the shell, run the following:
+    curl -i -H "Content-Type: application/json" -X POST -d '{"email":"<>"}' http://localhost:5000/post
+    """
+    data = json.loads(request.data)
+    user = Creator.objects(email=data['email']).first()
+    import ipdb;ipdb.set_trace()
+    if not user:
+        user = Creator(email=data['email'])
+        user.save()
+
+    # TODO: create new post
+    user.update(posts_no=user.posts_no + 1)
+    return jsonify(user.to_json())
 
 
 @app.route('/posts', methods=['GET'])
@@ -35,10 +42,5 @@ def get_top_10_creators():
 @app.route('/runtimestats', methods=['GET'])
 def get_avg_runtime():
     # TODO: \n not working
-    res = f"""Average runtime for 'create_post' is: {4} \nAverage runtime for 'get_posts' is: {6} """
+    res = f"""Average runtime for 'create_post' is: {5} \nAverage runtime for 'get_posts' is: {6} """
     return res
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
