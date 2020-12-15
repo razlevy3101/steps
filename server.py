@@ -6,47 +6,56 @@ from app import Creator, Post
 app = Flask(__name__)
 
 
-@app.route("/post", methods=["POST"])
-def create_post():
-    """
-    Creates a new post in the DB. Each post contains at least title, body and the user who created the post.
-    to send a POST request through the shell, run the following:
-    curl -i -H "Content-Type: application/json" -X POST -d '{"title": "<>", "body": "<>", "creator": "<email>"}' http://localhost:5000/post
-    """
-    data = json.loads(request.data)
-    if not all([field in data for field in ["creator", "title", "body"]]):
-        return make_response(jsonify({"error": "You have to enter all fields: creator(as email), "
-                                               "title and body"}),
-                             400)
-
-    user = Creator.objects(email=data["creator"]).first()
-    try:
-        if not user:
-            user = Creator(email=data["creator"])
-            user.save()
-    except Exception:
-        return make_response(jsonify({"error":
-                                      "There was a problem creating a new Creator. Please try again later."}),
-                             500)
-
-    try:
-        post = Post(creator=user,
-                    title=data["title"],
-                    body=(data["body"]))
-        post.save()
-    except Exception:
-        return make_response(jsonify({"error":
-                                          "There was a problem creating a new Post. Please try again later."}),
-                             500)
-    user.update(posts_no=user.posts_no + 1)
-    return jsonify(post.to_json())
+# @app.route("/post", methods=["POST"])
+# def create_post():
+#     """
+#     *Creates a new post in the DB. Each post contains at least title, body and the user who created the post.
+#     *To send a POST request through the shell, run the following:
+#     curl -i -H "Content-Type: application/json" -X POST -d '{"title": "<>", "body": "<>", "creator": "<email>"}' http://localhost:5000/post
+#     """
+#     data = json.loads(request.data)
+#     if not all([field in data for field in ["creator", "title", "body"]]):
+#         return make_response(jsonify({"error": "You have to enter all fields: creator(as email), "
+#                                                "title and body"}),
+#                              400)
+#
+#     user = Creator.objects(email=data["creator"]).first()
+#     try:
+#         if not user:
+#             user = Creator(email=data["creator"])
+#             user.save()
+#     except Exception:
+#         return make_response(jsonify({"error":
+#                                       "There was a problem creating a new Creator. Please try again later."}),
+#                              500)
+#
+#     try:
+#         post = Post(creator=user,
+#                     title=data["title"],
+#                     body=(data["body"]))
+#         post.save()
+#     except Exception:
+#         return make_response(jsonify({"error":
+#                                           "There was a problem creating a new Post. Please try again later."}),
+#                              500)
+#     user.update(posts_no=user.posts_no + 1)
+#     return jsonify(post.to_json())
 
 
 @app.route("/posts", methods=["GET"])
 def get_posts():
+    """
+
+    """
     # TODO
     import ipdb;ipdb.set_trace()
-    return jsonify({"tasks": "d"})
+    data = json.loads(request.data)
+
+    posts = Post.objects.order_by("-")[:10]
+    if not posts:
+        return "There are currently no posts"
+    res = [str(post) for post in posts]
+    return f"Here are the last {7} posts:<br/>{'<br/>'.join(res)}"
 
 
 # @app.route("/postsnumber", methods=["GET"])
