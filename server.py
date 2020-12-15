@@ -3,7 +3,7 @@ import json
 from time import time
 from flask import Flask, jsonify, request, make_response
 from functools import wraps
-from app import Creator, Post, Runtime, DEFAULT_LAST_POSTS
+from . import Creator, Post, Runtime, DEFAULT_LAST_POSTS
 
 app = Flask(__name__)
 
@@ -90,8 +90,8 @@ def get_top_10_creators():
 
 @app.route("/runtimestats", methods=["GET"])
 def get_avg_runtime():
-    create_post = Runtime.objects(func_name="create_post").average("total_time")
-    get_posts = Runtime.objects(func_name="get_posts").average("total_time")
-    res = f"Average runtime for 'create_post' is: {create_post} ms" \
-          f"<br/>Average runtime for 'get_posts' is: {get_posts} ms"
+    create_post_time = Runtime.objects(func_name="create_post").average("total_time")
+    get_posts_time = Runtime.objects(func_name="get_posts").average("total_time")
+    res = f"Average runtime for 'create_post' is: {create_post_time} ms" \
+          f"<br/>Average runtime for 'get_posts' is: {get_posts_time} ms"
     return res
