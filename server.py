@@ -1,46 +1,56 @@
 #!flask/bin/python
 import json
 from flask import Flask, jsonify, request
-from app import Creator
+from app import Creator, Post
 
 app = Flask(__name__)
 
 
-@app.route('/post', methods=['POST'])
+@app.route("/post", methods=["POST"])
 def create_post():
     """
     to send a POST request through the shell, run the following:
-    curl -i -H "Content-Type: application/json" -X POST -d '{"email":"<>"}' http://localhost:5000/post
+    curl -i -H "Content-Type: application/json" -X POST -d '{"title": "<>", "body": "<>", "creator": "<>"}' http://localhost:5000/post
+    curl -i -H "Content-Type: application/json" -X POST -d '{"title": "BLA", "creator": "raz@gmail.com"}' http://localhost:5000/post
     """
+    # TODO: handle errors
     data = json.loads(request.data)
-    user = Creator.objects(email=data['email']).first()
-    import ipdb;ipdb.set_trace()
+    user = Creator.objects(email=data["creator"]).first()
     if not user:
-        user = Creator(email=data['email'])
+        user = Creator(email=data["creator"])
         user.save()
 
-    # TODO: create new post
+    post = Post(creator=user,
+                title=data["title"],
+                body=(data["body"] if "body" in data else ""))
+    post.save()
     user.update(posts_no=user.posts_no + 1)
-    return jsonify(user.to_json())
+    return jsonify(post.to_json())
 
 
-@app.route('/posts', methods=['GET'])
+@app.route("/posts", methods=["GET"])
 def get_posts():
-    return jsonify({'tasks': "d"})
+    # TODO
+    import ipdb;ipdb.set_trace()
+    return jsonify({"tasks": "d"})
 
 
-@app.route('/postsnumber', methods=['GET'])
+@app.route("/postsnumber", methods=["GET"])
 def sum_posts():
-    return "Total posts number is:"
+    return f"There are {Post.objects.count()} Posts"
 
 
-@app.route('/topcreators', methods=['GET'])
+@app.route("/topcreators", methods=["GET"])
 def get_top_10_creators():
-    return "Top 10 creators are:"
+    """ Gets the top 10 of post creators """
+    top_creators = Creator.objects.order_by("-posts_no")[:10]
+    if not top_creators:
+        return "There are currently no creators"
+    res = [str(creator) for creator in top_creators]
+    return f"Top 10 creators are:<br/>{'<br/>'.join(res)}"
 
 
-@app.route('/runtimestats', methods=['GET'])
+@app.route("/runtimestats", methods=["GET"])
 def get_avg_runtime():
-    # TODO: \n not working
-    res = f"""Average runtime for 'create_post' is: {5} \nAverage runtime for 'get_posts' is: {6} """
+    res = f"""Average runtime for 'create_post' is: {4}<br/>Average runtime for 'get_posts' is: {6} """
     return res

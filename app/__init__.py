@@ -18,3 +18,20 @@ class Creator(db.Document):
 
     def to_json(self):
         return {"email": self.email, "posts_no": self.posts_no}
+
+    def __str__(self):
+        return f"Email: {self.email}, Number of Posts: {self.posts_no}"
+
+
+class Post(db.Document):
+    creator = db.ReferenceField(Creator)
+    title = db.StringField(required=True)
+    body = db.StringField()
+
+    def to_json(self):
+        return {"creator": self.creator.email, "title": self.title, "body": self.body}
+
+
+class Runtime(db.Document):
+    func_name = db.StringField(required=True)
+    total_time = db.DecimalField(required=True)
