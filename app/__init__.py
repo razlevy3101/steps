@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_mongoengine import MongoEngine
 
+DEFAULT_LAST_POSTS = 5
+
 app = Flask(__name__)
 
 app.config['MONGODB_SETTINGS'] = {
@@ -30,6 +32,12 @@ class Post(db.Document):
 
     def to_json(self):
         return {"creator": self.creator.email, "title": self.title, "body": self.body}
+
+    def to_html(self):
+        return str(self).replace("\n", "<br/>")
+
+    def __str__(self):
+        return f"Title: {self.title}\nCreated by: {self.creator.email}\nBody:\n{self.body}"
 
 
 class Runtime(db.Document):

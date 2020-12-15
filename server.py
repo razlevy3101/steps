@@ -1,7 +1,7 @@
 #!flask/bin/python
 import json
 from flask import Flask, jsonify, request, make_response
-from app import Creator, Post
+from app import Creator, Post, DEFAULT_LAST_POSTS
 
 app = Flask(__name__)
 
@@ -9,8 +9,8 @@ app = Flask(__name__)
 @app.route("/post", methods=["POST"])
 def create_post():
     """
-    Creates a new post in the DB. Each post contains at least title, body and the user who created the post.
-    to send a POST request through the shell, run the following:
+    *Creates a new post in the DB. Each post contains at least title, body and the user who created the post.
+    *To send a POST request through the shell, run the following:
     curl -i -H "Content-Type: application/json" -X POST -d '{"title": "<>", "body": "<>", "creator": "<email>"}' http://localhost:5000/post
     """
     data = json.loads(request.data)
@@ -44,24 +44,31 @@ def create_post():
 
 @app.route("/posts", methods=["GET"])
 def get_posts():
-    # TODO
-    import ipdb;ipdb.set_trace()
-    return jsonify({"tasks": "d"})
+    """
+    Show the last X posts.
+    When user doesn't enter a specific number of posts, get the default number.
+    """
+    chunk = int(request.args["chunk"]) if "chunk" in request.args else DEFAULT_LAST_POSTS
+    posts = Post.objects.order_by("-id")[:chunk]
+    if not posts:
+        return "There are currently no posts"
+    res = [f"Post #{index+1}:<br/>" + post.to_html() for index, post in enumerate(posts)]
+    return f"Here are the last {chunk} posts:<br/>{'<br/>'.join(res)}"
 
 
-# @app.route("/postsnumber", methods=["GET"])
-# def sum_posts():
-#     return f"There are {Post.objects.count()} Posts"
-#
-#
-# @app.route("/topcreators", methods=["GET"])
-# def get_top_10_creators():
-#     """ Gets the top 10 of post creators """
-#     top_creators = Creator.objects.order_by("-posts_no")[:10]
-#     if not top_creators:
-#         return "There are currently no creators"
-#     res = [str(creator) for creator in top_creators]
-#     return f"Top 10 creators are:<br/>{'<br/>'.join(res)}"
+@app.route("/postsnumber", methods=["GET"])
+def sum_posts():
+    return f"There are {Post.objects.count()} Posts"
+
+
+@app.route("/topcreators", methods=["GET"])
+def get_top_10_creators():
+    """ Gets the top 10 of post creators """
+    top_creators = Creator.objects.order_by("-posts_no")[:10]
+    if not top_creators:
+        return "There are currently no creators"
+    res = [str(creator) for creator in top_creators]
+    return f"Top 10 creators are:<br/>{'<br/>'.join(res)}"
 
 
 @app.route("/runtimestats", methods=["GET"])
