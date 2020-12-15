@@ -1,0 +1,11 @@
+
+~ Timing (or- how much time i spent while working on this task) ~
+* about 1 hour - getting to know flask and create a template for the server
+* 2.5 hours - download and play-around with SQLite. After a lot of dead time due to a problem unsolved (google wasn’t very helpful) i decided to move to MongoDB.
+* 1 hour - managed to install and have a primary working POST func with access to db
+* 2.5 hours - write (almost) all functions. Almost- because i didn’t implement the /posts as pagination.
+
+
+
+~ Notes ~
+* Regarding the timing implementation: it could have been done locally, without the DB. However, i think this way is better when wanting to cope with a lot of data later on.
