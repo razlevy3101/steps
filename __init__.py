@@ -4,9 +4,8 @@ from flask_mongoengine import MongoEngine
 DEFAULT_LAST_POSTS = 5
 
 app = Flask(__name__)
-
 app.config['MONGODB_SETTINGS'] = {
-    'db': 'your_database',
+    'db': 'steps_task',
     'host': 'localhost',
     'port': 27017
 }
