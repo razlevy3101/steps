@@ -37,7 +37,7 @@ class Post(db.Document):
         return str(self).replace("\n", "<br/>")
 
     def __str__(self):
-        return f"Title: {self.title}\nCreated by: {self.creator.email}\nBody:\n{self.body}"
+        return f"Title: {self.title}\nCreated by: {self.creator.email}\nBody:{self.body}"
 
 
 class Runtime(db.Document):

@@ -6,6 +6,10 @@ from functools import wraps
 from . import Creator, Post, Runtime, DEFAULT_LAST_POSTS
 
 app = Flask(__name__)
+global start_index
+start_index = 0
+global limit_index
+limit_index = DEFAULT_LAST_POSTS
 
 
 def timing(foo):
@@ -62,15 +66,25 @@ def create_post():
 @timing
 def get_posts():
     """
-    Show the last X posts.
-    When user doesn't enter a specific number of posts, get the default number.
+    * Show the last X posts. On the next call, show the next X posts (acts like paginator).
+    * If user doesn't enter start index - start from the last post (index = 0)
+    * If user doesn't enter limit index - show DEFAULT_LAST_POSTS number of posts
     """
-    chunk = int(request.args["chunk"]) if "chunk" in request.args else DEFAULT_LAST_POSTS
-    posts = Post.objects.order_by("-id")[:chunk]
+    global start_index
+    global limit_index
+    start_index = int(request.args["start"]) if "start" in request.args else start_index
+    limit_index = int(request.args["limit"]) if "limit" in request.args else limit_index
+
+    posts = Post.objects.order_by("-id")[start_index: limit_index]
     if not posts:
-        return "There are currently no posts"
-    res = [f"Post #{index+1}:<br/>" + post.to_html() for index, post in enumerate(posts)]
-    return f"Here are the last {chunk} posts:<br/>{'<br/>'.join(res)}"
+        start_index = 0
+        limit_index = DEFAULT_LAST_POSTS
+        return "There are currently no more posts"
+
+    res = [f"Post #{start_index+index+1}:<br/>" + post.to_html() for index, post in enumerate(posts)]
+    start_index = limit_index
+    limit_index += DEFAULT_LAST_POSTS
+    return f"{'<br/>'.join(res)}"
 
 
 @app.route("/postsnumber", methods=["GET"])
