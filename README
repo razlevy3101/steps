@@ -1,3 +1,6 @@
+* Install the requirements using pip.
+* This code is using local MogoDB.
+* Use "flask run" to start the server.
 
 ~ Timing (or- how much time i spent while working on this task) ~
 * about 1 hour - getting to know flask and create a template for the server
@@ -5,6 +8,7 @@
 * 1 hour - managed to install and have a primary working POST func with access to db
 * 2.5 hours - write (almost) all functions. Almost- because i didn’t implement the /posts as pagination.
 * 20 minutes - convert posts to pagination logic
+* 30 minutes - finalizing the code
 
 
 
