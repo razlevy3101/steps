@@ -6,6 +6,7 @@ from functools import wraps
 from . import Creator, Post, Runtime, DEFAULT_LAST_POSTS
 
 app = Flask(__name__)
+
 global start_index
 start_index = 0
 global limit_index
@@ -18,9 +19,11 @@ def timing(foo):
         start = time()
         ret = foo(*args, **kwargs)
         end = time()
+
         # convert time to milliseconds
-        runtime = Runtime(func_name=foo.__name__, total_time=(end-start)*1000.0)
+        runtime = Runtime(func_name=foo.__name__, total_time=1000.0*(end - start))
         runtime.save()
+
         return ret
     return wrap
 
@@ -40,10 +43,12 @@ def create_post():
                              400)
 
     user = Creator.objects(email=data["creator"]).first()
+
     try:
         if not user:
             user = Creator(email=data["creator"])
             user.save()
+
     except Exception:
         return make_response(jsonify({"error":
                                       "There was a problem creating a new Creator. Please try again later."}),
@@ -54,6 +59,7 @@ def create_post():
                     title=data["title"],
                     body=(data["body"]))
         post.save()
+
     except Exception:
         return make_response(jsonify({"error":
                                       "There was a problem creating a new Post. Please try again later."}),
@@ -84,6 +90,7 @@ def get_posts():
     res = [f"Post #{start_index+index+1}:<br/>" + post.to_html() for index, post in enumerate(posts)]
     start_index = limit_index
     limit_index += DEFAULT_LAST_POSTS
+
     return f"{'<br/>'.join(res)}"
 
 
@@ -96,8 +103,10 @@ def sum_posts():
 def get_top_10_creators():
     """ Gets the top 10 of post creators """
     top_creators = Creator.objects.order_by("-posts_no")[:10]
+
     if not top_creators:
         return "There are currently no creators"
+
     res = [str(creator) for creator in top_creators]
     return f"Top 10 creators are:<br/>{'<br/>'.join(res)}"
 
@@ -108,4 +117,5 @@ def get_avg_runtime():
     get_posts_time = Runtime.objects(func_name="get_posts").average("total_time")
     res = f"Average runtime for 'create_post' is: {create_post_time} ms" \
           f"<br/>Average runtime for 'get_posts' is: {get_posts_time} ms"
+
     return res
