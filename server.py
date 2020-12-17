@@ -6,11 +6,8 @@ from functools import wraps
 from . import Creator, Post, Runtime, DEFAULT_LAST_POSTS
 
 app = Flask(__name__)
-
-global start_index
-start_index = 0
-global limit_index
-limit_index = DEFAULT_LAST_POSTS
+app.start_index = 0
+app.limit_index = DEFAULT_LAST_POSTS
 
 
 def timing(foo):
@@ -76,20 +73,18 @@ def get_posts():
     * If user doesn't enter start index - start from the last post (index = 0)
     * If user doesn't enter limit index - show DEFAULT_LAST_POSTS number of posts
     """
-    global start_index
-    global limit_index
-    start_index = int(request.args["start"]) if "start" in request.args else start_index
-    limit_index = int(request.args["limit"]) if "limit" in request.args else limit_index
+    start_index = int(request.args["start"]) if "start" in request.args else app.start_index
+    limit_index = int(request.args["limit"]) if "limit" in request.args else app.limit_index
 
     posts = Post.objects.order_by("-id")[start_index: limit_index]
     if not posts:
-        start_index = 0
-        limit_index = DEFAULT_LAST_POSTS
+        app.start_index = 0
+        app.limit_index = DEFAULT_LAST_POSTS
         return "There are currently no more posts"
 
     res = [f"Post #{start_index+index+1}:<br/>" + post.to_html() for index, post in enumerate(posts)]
-    start_index = limit_index
-    limit_index += DEFAULT_LAST_POSTS
+    app.start_index = limit_index
+    app.limit_index += DEFAULT_LAST_POSTS
 
     return f"{'<br/>'.join(res)}"
 
